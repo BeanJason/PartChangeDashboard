@@ -1,12 +1,26 @@
-import React, { useState } from "react";
-import Papa from "papaparse";
+import React, { useEffect, useState } from "react";
+//import Papa from "papaparse";
 
 // Allowed extensions for input file
 const allowedExtensions = ["csv"];
 
 const App = () => {
   // This state will store the parsed data
-  const [data, setData] = useState([]);
+  const [data, setData] = useState({
+    program: "",
+    version: "",
+    Date: "",
+    Time: "",
+    Shift: "",
+    locationOfChange: "",
+    changeDescription: "",
+  });
+
+  const [dataArr, setDataArr] = useState([]);
+
+  // useEffect(() => {
+  //   setDisplayData();
+  // }, [data]);
 
   // It state will contain the error when
   // correct file extension is not used
@@ -49,35 +63,104 @@ const App = () => {
     // Event listener on reader when the file
     // loads, we parse it and set the data.
     reader.onload = async ({ target }) => {
-      const csv = Papa.parse(target.result, {
-        header: false,
-        newline: "", //I think the problem lies here
-        delimiter: ",",
-      });
-      const parsedData = csv?.data;
-      const columns = Object.keys(parsedData[0]);
-      setData(columns);
+      var content = target.result;
+      //remove line breaks
+      content = content.replace(/(\r\n|\n|\r)/gm, "");
+      //split the content into an array
+      var contentSplit = content.split(",");
+      //remove empty elements
+      contentSplit = contentSplit.filter(isEmpty);
+      console.log("content of file = " + content + "\n\n");
+      console.log(contentSplit);
+      console.log(contentSplit[1]);
+      console.log();
+      //var count = 0;
+
+      // const dataObject = {
+      //   program: contentSplit[contentSplit.indexOf("Program") + 1],
+      //   version: contentSplit[contentSplit.indexOf("Version") + 1],
+      //   Date: contentSplit[contentSplit.indexOf("Date") + 1],
+      //   Time: contentSplit[contentSplit.indexOf("Time") + 1],
+      //   Shift: contentSplit[contentSplit.indexOf("Shift") + 1],
+      //   locationOfChange:
+      //     contentSplit[contentSplit.indexOf("Location of Change") + 1],
+      //   changeDescription:
+      //     contentSplit[contentSplit.indexOf("Change Description") + 1],
+      // };
+      data.program = contentSplit[contentSplit.indexOf("Program") + 1];
+      data.version = contentSplit[contentSplit.indexOf("Version") + 1];
+      data.Date = contentSplit[contentSplit.indexOf("Date") + 1];
+      data.Time = contentSplit[contentSplit.indexOf("Time") + 1];
+      data.Shift = contentSplit[contentSplit.indexOf("Shift") + 1];
+      data.locationOfChange =
+        contentSplit[contentSplit.indexOf("Location of Change") + 1];
+      data.changeDescription =
+        contentSplit[contentSplit.indexOf("Change Description") + 1];
+      setDataArr((dataArr) => ({
+        dataArr,
+        data,
+      }));
+      //clear object
+      // setData({});
+      // //fill object
+      // setData((data) => ({
+      //   dataObject,
+      // }));
+      //console.log(data)
+      console.log(dataArr);
+      console.log(data);
+      console.log(JSON.stringify(data));
     };
     reader.readAsText(file);
-    console.log(data);
   };
+
+  function isEmpty(val) {
+    if (val === "") {
+      return false;
+    } else {
+      return true;
+    }
+  }
+
+  function setDisplayData() {
+    const displayData = (
+      <div style={{ marginTop: "3rem" }}>
+        <p>program: {data.program}</p>
+        <p>version: {data.version}</p>
+        <p>Date: {data.Date}</p>
+        <p>Time: {data.Time}</p>
+        <p>Shift: {data.Shift}</p>
+        <p>Location Of Change: {data.locationOfChange}</p>
+        <p>Change Description: {data.changeDescription}</p>
+      </div>
+    );
+    return displayData;
+  }
 
   return (
     <div>
-      <label htmlFor="csvInput" style={{ display: "block" }}>
-        Enter CSV File
-      </label>
-      <input
-        onChange={handleFileChange}
-        id="csvInput"
-        name="file"
-        type="File"
-      />
-      <div>
-        <button onClick={handleParse}>Parse</button>
-      </div>
+      <header>
+        <label htmlFor="csvInput" style={{ display: "block" }}>
+          Enter CSV File
+        </label>
+        <input
+          onChange={handleFileChange}
+          id="csvInput"
+          name="file"
+          type="File"
+        />
+        <div>
+          <button onClick={handleParse}>Parse</button>
+        </div>
+      </header>
       <div style={{ marginTop: "3rem" }}>
-        {error ? error : data.map((col, idx) => <div key={idx}>{col}</div>)}
+        <p>program: {data.program}</p>
+        <p>version: {data.version}</p>
+        <p>Date: {data.Date}</p>
+        <p>Time: {data.Time}</p>
+        <p>Shift: {data.Shift}</p>
+        <p>Location Of Change: {data.locationOfChange}</p>
+        <p>Change Description: {data.changeDescription}</p>
       </div>
     </div>
   );
